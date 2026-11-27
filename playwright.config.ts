@@ -4,8 +4,10 @@ const PORT = 4173;
 
 export default defineConfig({
   timeout: 60_000,
-  testDir: "./tests/e2e",
-  testMatch: "**/*.e2e.ts",
+  expect: {
+    timeout: 10_000,
+  },
+  testMatch: ["e2e/**/*.@(spec|e2e).ts", "tests/e2e/**/*.@(spec|e2e).ts"],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -20,6 +22,7 @@ export default defineConfig({
     video: "retain-on-failure",
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
+    serviceWorkers: "block",
   },
   // Acceptance criteria: multi-browser support.
   projects: [

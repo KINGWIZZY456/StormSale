@@ -10,10 +10,13 @@ import { CustomLinksManager } from "../components/affiliate/CustomLinksManager";
 import { CampaignApplication } from "../components/affiliate/CampaignApplication";
 import { AffiliateLeaderboard } from "../components/affiliate/AffiliateLeaderboard";
 import { MilestoneBadges } from "../components/affiliate/MilestoneBadges";
+import { TierCommissionCalculator } from "../components/affiliate/TierCommissionCalculator";
+import { AffiliateEarningsCharts } from "../components/affiliate/AffiliateEarningsCharts";
 import { ReferralNetworkTree } from "../components/affiliate/ReferralNetworkTree";
 import {
   Users,
   TrendingUp,
+  BarChart3,
   DollarSign,
   Shield,
   LayoutDashboard,
@@ -34,8 +37,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { isTelegramMiniApp } from "../lib/telegram";
 import { AffiliateSettings } from "../components/affiliate/AffiliateSettings";
 import { TelegramAlertsCard } from "../components/affiliate/TelegramAlertsCard";
+import { AffiliateIssueReports } from "../components/affiliate/AffiliateIssueReports";
 import { ZKProofGenerator } from "../components/affiliate/ZKProofGenerator";
+import { DisputesManager } from "../components/affiliate/DisputesManager";
 import { Button } from "../components/ui/button";
+import { EmptyState } from "../components/shared/EmptyState";
 
 interface AffiliateProps {
   onBack: () => void;
@@ -44,6 +50,7 @@ interface AffiliateProps {
 
 const AFFILIATE_TABS = [
   "overview",
+  "earnings-history",
   "heatmap",
   "referral-tree",
   "zk-portfolio",
@@ -53,7 +60,10 @@ const AFFILIATE_TABS = [
   "milestones",
   "join-campaign",
   "my-sales",
+  "tier-calculator",
+  "issue-reports",
   "claim-payouts",
+  "disputes",
   "settings",
   "security",
   "apply-links",
@@ -73,6 +83,7 @@ const AffiliateContent: React.FC<AffiliateProps> = ({ onBack, initialTab = "over
 
   const tabs = [
     { id: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
+    { id: "earnings-history", label: "Earnings & Performance", icon: BarChart3 },
     { id: "heatmap", label: "Click Heatmap", icon: Globe2 },
     { id: "referral-tree", label: "Referral Network (2% Override)", icon: GitBranch },
     { id: "zk-portfolio", label: "ZK Revenue Proofs ($50K+)", icon: ShieldCheck },
@@ -83,13 +94,18 @@ const AffiliateContent: React.FC<AffiliateProps> = ({ onBack, initialTab = "over
     { id: "join-campaign", label: "Join Campaign", icon: Users },
     { id: "apply-links", label: "Apply & Tracking Links", icon: Link2 },
     { id: "my-sales", label: "My Sales & Commissions", icon: DollarSign },
+    { id: "tier-calculator", label: "Tier & Commission Calculator", icon: TrendingUp },
+    { id: "issue-reports", label: "Report an Issue", icon: Shield },
     { id: "claim-payouts", label: "Claim Payouts", icon: TrendingUp },
+    { id: "disputes", label: "Disputes & Mediation", icon: Shield },
     { id: "settings", label: "Personalized Settings", icon: Sliders },
     { id: "security", label: "Security & Keys", icon: Shield },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
+      case "earnings-history":
+        return <AffiliateEarningsCharts onNavigateToClaim={() => setActiveTab("claim-payouts")} />;
       case "heatmap":
         return <AffiliateClickStreamHeatmap />;
       case "referral-tree":
@@ -110,8 +126,14 @@ const AffiliateContent: React.FC<AffiliateProps> = ({ onBack, initialTab = "over
         return <CampaignApplication />;
       case "my-sales":
         return <SalesList />;
+      case "tier-calculator":
+        return <TierCommissionCalculator />;
+      case "issue-reports":
+        return <AffiliateIssueReports />;
       case "claim-payouts":
         return <ClaimPayouts />;
+      case "disputes":
+        return <DisputesManager />;
       case "settings":
         return (
           <div className="space-y-6">
@@ -122,11 +144,17 @@ const AffiliateContent: React.FC<AffiliateProps> = ({ onBack, initialTab = "over
       case "overview":
       default:
         return (
-          <AffiliateOverview
-            onNavigate={setActiveTab}
-            onNavigateToLeaderboard={() => setActiveTab("leaderboard")}
-            onNavigateToMilestones={() => setActiveTab("milestones")}
-          />
+          <div className="space-y-6">
+            <EmptyState
+              role="affiliate"
+              onAction={(destination) => setActiveTab(destination as AffiliateTab)}
+            />
+            <AffiliateOverview
+              onNavigate={setActiveTab}
+              onNavigateToLeaderboard={() => setActiveTab("leaderboard")}
+              onNavigateToMilestones={() => setActiveTab("milestones")}
+            />
+          </div>
         );
     }
   };

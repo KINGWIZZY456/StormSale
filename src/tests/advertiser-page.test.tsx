@@ -1,6 +1,18 @@
 // @vitest-environment jsdom
+import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("framer-motion", () => {
+  const MotionComponent = (props: any) => {
+    const { initial, animate, exit, transition, ...rest } = props;
+    return React.createElement("div", rest);
+  };
+  return {
+    motion: new Proxy({}, { get: () => MotionComponent }),
+    AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children),
+  };
+});
 
 vi.mock("../config/stellar", () => ({
   STELLAR_CONFIG: { contractId: "CCONTRACT", network: "TESTNET" },
@@ -48,6 +60,9 @@ vi.mock("../components/advertiser/MyCampaignsList", () => ({
   MyCampaignsList: stub("My campaigns"),
 }));
 vi.mock("../components/advertiser/WebhookManager", () => ({ WebhookManager: stub("Webhooks") }));
+vi.mock("../components/advertiser/SlackSettingsCard", () => ({
+  SlackSettingsCard: stub("Slack alerts"),
+}));
 vi.mock("../components/advertiser/BrandCustomizer", () => ({ BrandCustomizer: stub("Branding") }));
 vi.mock("../components/advertiser/AuditAccessPortal", () => ({
   AuditAccessPortal: stub("Audit logs"),
@@ -55,6 +70,15 @@ vi.mock("../components/advertiser/AuditAccessPortal", () => ({
 vi.mock("../components/advertiser/CohortVisualizer", () => ({ CohortVisualizer: stub("Cohort") }));
 vi.mock("../components/advertiser/AffiliateApplicationsQueue", () => ({
   AffiliateApplicationsQueue: stub("Applications"),
+}));
+vi.mock("../components/advertiser/BatchSaleUploader", () => ({
+  BatchSaleUploader: stub("Batch sales"),
+}));
+vi.mock("../components/advertiser/OrganizationManagement", () => ({
+  OrganizationManagement: stub("Team"),
+}));
+vi.mock("../components/advertiser/FraudRiskPartnerTable", () => ({
+  FraudRiskPartnerTable: stub("Fraud risk"),
 }));
 
 import { Advertiser } from "../pages/Advertiser";
@@ -76,6 +100,7 @@ describe("Advertiser page navigation", () => {
       ["Log Encrypted Sale", "Log sale content"],
       ["Cohort & LTV Analysis", "Cohort content"],
       ["Postback Webhooks", "Webhooks content"],
+      ["Slack Alerts", "Slack alerts content"],
       ["Grant Audit Access", "Grant content"],
       ["Audit Access Logs", "Audit logs content"],
       ["Campaign Analytics", "Analytics content"],

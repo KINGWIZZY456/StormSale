@@ -40,6 +40,15 @@ export const ROLE_DEFINITIONS: Record<OrganizationRole, RoleDefinition> = {
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
     capabilities: ["campaign:create", "campaign:edit", "sale:log", "analytics:view"],
   },
+  CAMPAIGN_MANAGER: {
+    role: "CAMPAIGN_MANAGER",
+    label: "Campaign Manager",
+    description:
+      "Create and manage campaigns, configure variants & links, log sales, and analyze marketing performance.",
+    badgeClass:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+    capabilities: ["campaign:create", "campaign:edit", "sale:log", "analytics:view"],
+  },
   EDITOR: {
     role: "EDITOR",
     label: "Editor",
@@ -136,7 +145,8 @@ export function generateOrganizationAuthChallenge(
     throw new Error("Invalid Stellar wallet address for organization authentication challenge.");
   }
   const challengeNonce =
-    typeof globalThis.crypto !== "undefined" && typeof globalThis.crypto.getRandomValues === "function"
+    typeof globalThis.crypto !== "undefined" &&
+    typeof globalThis.crypto.getRandomValues === "function"
       ? Array.from(globalThis.crypto.getRandomValues(new Uint8Array(16)), (b) =>
           b.toString(16).padStart(2, "0"),
         ).join("")
@@ -185,10 +195,10 @@ export function verifyMemberWalletSignature(
   // 2. Real Ed25519 cryptographic signature check
   try {
     const kp = Keypair.fromPublicKey(memberAddress);
-    const messageBuffer = Buffer.from(challenge.messageToSign, "utf8");
-    const sigBuffer = Buffer.from(signature, "base64");
-    if (sigBuffer.length === 64) {
-      return kp.verify(messageBuffer, sigBuffer);
+    const messageBytes = new Uint8Array(Buffer.from(challenge.messageToSign, "utf8"));
+    const sigBytes = new Uint8Array(Buffer.from(signature, "base64"));
+    if (sigBytes.length === 64) {
+      return kp.verify(messageBytes, sigBytes);
     }
   } catch {
     return false;
@@ -280,6 +290,15 @@ export function loadOrganizationState(): OrganizationState {
   } catch {
     return INITIAL_ORGANIZATION_STATE;
   }
+}
+
+/**
+ * Generates unique invite token for B2B enterprise multi-seat onboarding (#489)
+ */
+export function generateMemberInviteToken(orgId: string, email: string): string {
+  const nonce = Math.random().toString(36).substring(2, 10);
+  const cleanEmail = email.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+  return `inv_${orgId}_${cleanEmail}_${Date.now()}_${nonce}`;
 }
 
 /**
